@@ -1,9 +1,8 @@
 {
   "version": 2,
-  "builds": [
-    { "src": "api/viewCounter.js", "use": "@vercel/node" }
-  ],
-  "routes": [
-    { "src": "/api/viewCounter", "dest": "/api/viewCounter.js" }
-  ]
+  "functions": {
+    "api/viewCounter.js": {
+      "runtime": "edge"
+    }
+  }
 }
