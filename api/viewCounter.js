@@ -1,25 +1,19 @@
-import fs from 'fs';
-import path from 'path';
+export const config = {
+  runtime: 'edge', // pastikan pakai edge runtime
+};
 
-export default function handler(req, res) {
-  const filePath = path.join(process.cwd(), 'data.json');
+let views = 0;
 
-  // Buat file kalau belum ada
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify({ views: 0 }));
-  }
-
-  const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-  if (req.method === 'GET') {
-    return res.status(200).json({ views: data.views });
-  }
-
+export default async function handler(req) {
   if (req.method === 'POST') {
-    data.views += 1;
-    fs.writeFileSync(filePath, JSON.stringify(data));
-    return res.status(200).json({ views: data.views });
+    views++;
   }
 
-  return res.status(405).json({ message: 'Method not allowed' });
+  return new Response(
+    JSON.stringify({ views }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+      status: 200,
+    }
+  );
 }
