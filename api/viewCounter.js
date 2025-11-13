@@ -1,47 +1,29 @@
-export const config = { runtime: 'edge' };
+import fs from "fs";
 
-// Simpan nilai views di memory (reset setiap deploy)
-let views = 0;
+export default function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-export default async function handler(req) {
-  // handle preflight CORS
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders(),
-    });
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
   }
 
-  // handle POST untuk increment
-  if (req.method === 'POST') {
-    views++;
-    return new Response(JSON.stringify({ views }), {
-      status: 200,
-      headers: corsHeaders(),
-    });
+  const filePath = "./views.json";
+
+  let views = 0;
+  try {
+    const data = fs.readFileSync(filePath, "utf8");
+    views = JSON.parse(data).views;
+  } catch (error) {
+    views = 0;
   }
 
-  // handle GET untuk baca nilai sekarang
-  if (req.method === 'GET') {
-    return new Response(JSON.stringify({ views }), {
-      status: 200,
-      headers: corsHeaders(),
-    });
+  // Jika method POST, tambahkan view
+  if (req.method === "POST") {
+    views += 1;
+    fs.writeFileSync(filePath, JSON.stringify({ views }));
   }
 
-  // method lain
-  return new Response("Method not allowed", {
-    status: 405,
-    headers: corsHeaders(),
-  });
+  res.status(200).json({ views });
 }
-
-function corsHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
-}
-
